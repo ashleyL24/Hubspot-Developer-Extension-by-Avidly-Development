@@ -1,65 +1,101 @@
-# HubSpot Developer Tools Chrome Extension
+# HubSpot Developer Extension
 
-A Chrome extension designed to improve the daily workflow of HubSpot developers by providing quick access to documentation, community links, and URL modification tools.
+![Chrome Web Store](https://img.shields.io/chrome-web-store/v/PLACEHOLDER.svg?label=Chrome%20Web%20Store)
+![License](https://img.shields.io/github/license/Blue-Frog-DM/Hubspot-Developer-Extension-by-Avidly-Development.svg)
+
+> An open‑source Chrome extension that super‑charges HubSpot development — maintained by Avidly Development.
+
+## Table of Contents
+
+* [Features](#features)
+* [Installation](#installation)
+* [Usage](#usage)
+
+  * [URL Tools](#url-tools)
+* [Project Structure](#project-structure)
+* [Contributing](#contributing)
+* [Code of Conduct](#code-of-conduct)
+* [License](#license)
 
 ## Features
 
-1. Quick Documentation Links
-   - API Documentation (CRM API, CMS API, Webhooks, OAuth)
-   - HubL Template Language Reference
-
-2. URL Modification Tools
-   - Enable Debug Mode
-   - Disable Caching
-   - Preview Mode
-   - Test Mode
-   - Portal Simulation
-
-3. Community Resources
-   - Developer Announcements
-   - CMS Development Tips
-   - CRM Customization Questions
-   - Workflow Automation Examples
+| Category                    | Highlights                                                                                                        |
+| --------------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| **Documentation shortcuts** | • CRM API & CMS API<br>• Webhooks & OAuth<br>• HubL reference                                                     |
+| **URL tools**               | • Toggle debug mode<br>• Disable cache<br>• Preview/Test mode<br>• Portal simulation                              |
+| **Community links**         | • Developer announcements<br>• CMS development tips<br>• CRM customization Q\&A<br>• Workflow automation examples |
 
 ## Installation
 
-1. Open Chrome and navigate to `chrome://extensions/`
-2. Enable "Developer mode" in the top right corner
-3. Click "Load unpacked" and select the `src` directory of this extension
-4. The extension icon should appear in your Chrome toolbar
+### From Chrome Web Store (coming soon)
+
+*Not yet published. We'll update this section when the extension is live on the Chrome Web Store.*
+
+### From source (development)
+
+1. Clone this repository:
+
+   ```bash
+   git clone https://github.com/Blue-Frog-DM/Hubspot-Developer-Extension-by-Avidly-Development.git
+   ```
+2. In Chrome, open `chrome://extensions/` and enable **Developer mode**.
+3. Click **Load unpacked** and select the `src` folder.
+
+The extension icon will appear in your toolbar once loading completes.
 
 ## Usage
 
-1. Click the extension icon to open the popup
-2. Use the tabs to navigate between different features:
-   - **Documentation**: Quick links to HubSpot developer resources
-   - **URL Tools**: Modify current HubSpot URL parameters
-   - **Community**: Access to community resources and discussions
+1. Click the HubSpot Developer Extension icon.
+2. Navigate between **Docs**, **URL Tools**, and **Community** tabs.
+3. Actions that alter the current tab’s URL will automatically reload the page for you.
 
-### URL Modification Tools
+### URL Tools
 
-- All URL modification tools only work on HubSpot domains
-- When using the Portal Simulation, enter a valid Portal ID before clicking the button
-- Changes will automatically reload the page with the new parameters
+| Tool                  | What it does                                          |
+| --------------------- | ----------------------------------------------------- |
+| **Debug mode**        | Appends `?hsDebug=true`                               |
+| **Disable cache**     | Appends `?nocache=true`                               |
+| **Preview / Test**    | Quickly switch between `?preview=` and `?test=` modes |
+| **Portal simulation** | Temporarily impersonate another portal by ID          |
 
-## Development
+> **Note:** All URL tools work only on HubSpot domains.
 
-### Project Structure
+## Project Structure
+
 ```
 src/
-├── manifest.json      # Extension configuration
-├── popup.html        # Main popup interface
+├── manifest.json      # Extension manifest
+├── popup.html         # Main interface
 ├── css/
-│   └── popup.css     # Styles for the popup
+│   └── popup.css
 ├── js/
-│   └── popup.js      # Popup functionality
-└── images/           # Extension icons
+│   └── popup.js
+└── images/            # Icons & screenshots
 ```
 
-### Prerequisites
-- Chrome browser
-- Basic knowledge of HTML, CSS, and JavaScript
-- Understanding of Chrome extension development
+## Contributing
 
-## Note
-Remember to replace the placeholder icons in the `images` directory with your own icons before publishing the extension.
+We ❤️ contributions! Please see our [CONTRIBUTING.md](./CONTRIBUTING.md) for the full workflow, coding standards, and branch/commit guidelines.
+
+Quick start:
+
+1. Fork the repository.
+2. Create your feature branch: `git checkout -b feature/my-awesome-feature`.
+3. Commit your changes following [Conventional Commits](https://www.conventionalcommits.org/).
+4. Push to the branch and open a pull request.
+
+### Assets
+
+Replace the placeholder icons in `src/images` with your own before publishing to the Chrome Web Store.
+
+## Code of Conduct
+
+We are committed to fostering a welcoming community. Please read our [Code of Conduct](./CODE_OF_CONDUCT.md) before participating.
+
+###### Disclaimer
+
+*HubSpot® is a registered trademark of HubSpot, Inc. This project is not affiliated with or endorsed by HubSpot.*
+
+## License
+
+MIT © Avidly Development
