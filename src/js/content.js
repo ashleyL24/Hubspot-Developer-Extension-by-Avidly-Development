@@ -21,28 +21,36 @@ function getPageInfo() {
         currentLanguage: null
     };
 
-    // Try to get hsVars from different possible sources
+    // Try direct window access
     try {
-        // Try direct window access
-        if (typeof window.hsVars !== 'undefined') {
+        if (typeof window.getHsInfo === 'function') {
+            const hsInfo = window.getHsInfo();
+            info.portalId = hsInfo.portalId;
+            info.currentLanguage = hsInfo.currentLanguage;
+        } else if (typeof window.hsVars !== 'undefined') {
             info.portalId = window.hsVars.portal_id;
             info.currentLanguage = window.hsVars.language;
         } else {
-            // Try to find hsVars in script tags
+            // Try to find hsVars in script tags (fallback, best effort only)
             const scripts = document.querySelectorAll('script');
             for (const script of scripts) {
                 const content = script.textContent;
                 if (content && content.includes('var hsVars = {')) {
-                    const match = content.match(/var hsVars = ({[^}]+})/);
-                    if (match) {
-                        try {
-                            const vars = JSON.parse(match[1].replace(/([{,]\s*)(\w+):/g, '$1"$2":'));
-                            info.portalId = vars.portal_id;
-                            info.currentLanguage = vars.language;
-                            break;
-                        } catch (e) {
-                            console.error('Error parsing hsVars:', e);
-                        }
+                    // Extract object string
+                    let objText = content.split('var hsVars = ')[1];
+                    objText = objText.split('};')[0] + '}';
+                    // Sanitize for JSON parse
+                    let safeText = objText
+                        .replace(/([{,]\s*)(\w+):/g, '$1"$2":') // quote keys
+                        .replace(/'([^']*)'/g, '"$1"')         // single to double quotes
+                        .replace(/,\s*}/g, '}');               // trailing commas
+                    try {
+                        const vars = JSON.parse(safeText);
+                        info.portalId = vars.portal_id;
+                        info.currentLanguage = vars.language;
+                        break;
+                    } catch (e) {
+                        console.error('Error parsing hsVars:', e, safeText);
                     }
                 }
             }
@@ -64,8 +72,6 @@ function getPageInfo() {
     if (info.currentLanguage) {
         info.languages.add(info.currentLanguage);
     }
-
-    console.log('Page Info:', info); // Debug log
 
     return {
         portalId: info.portalId,
