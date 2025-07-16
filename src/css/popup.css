@@ -35,6 +35,12 @@ body {
   font-weight: 400;
   border-radius: 8px;
 }
+.button__group {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  column-gap: 10px;
+  row-gap: 10px;
+}
 
 .tab-btn.btn.active {
   background: var(--primary);
@@ -54,10 +60,15 @@ body {
 .tab-content.active {
   display: block;
 }
-.tab-content .section {
-  -webkit-backdrop-filter: saturate(180%) blur(20px);
-  backdrop-filter: saturate(120%) blur(10px);
-  background: hsla(0, 0%, 100%, 0.3);
+.tab-content .button-grid.section {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 15px 30px -12px rgba(0, 0, 0, 0.5);
+  transform-style: preserve-3d;
+  cursor: pointer;
+  overflow: hidden;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   border-radius: 7px;
   position: relative;
 }
@@ -132,13 +143,19 @@ a:hover {
   display: grid;
   grid-template-columns: 1fr;
   gap: 12px;
-  padding: 16px;
+  padding: 0;
   border-radius: 8px;
 }
 
 .button-grid button {
   width: 100%;
   height: auto;
+  transition: .5s ease-in-out;
+}
+
+.button-grid button:hover {
+  background: var(--primary);
+  color: #fff;
 }
 
 .language-selector {
