@@ -45,22 +45,27 @@ document.addEventListener("DOMContentLoaded", () => {
   // Button click handlers
   document.getElementById("bypassCache").addEventListener("click", () => {
     modifyUrl({ hsCacheBuster: generateRandomNumber() });
+    window.close();
   });
 
   document.getElementById("enableDebug").addEventListener("click", () => {
     modifyUrl({ hsDebug: "true" });
+    window.close();
   });
 
   document.getElementById("showDebugOnly").addEventListener("click", () => {
     modifyUrl({ hsDebugOnly: "true" });
+    window.close();
   });
 
   document.getElementById("activateDev").addEventListener("click", () => {
     modifyUrl({ developerMode: "true" });
+    window.close();
   });
 
   document.getElementById("viewAmp").addEventListener("click", () => {
     modifyUrl({ hs_amp: "true" });
+    window.close();
   });
 
   // Language switcher functionality
@@ -135,6 +140,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     modifyUrl({ hsLang: selectedLang });
+    window.close();
   });
 
   // Design Manager functionality
@@ -159,6 +165,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (response && response.portalId) {
         const designManagerUrl = `https://app.hubspot.com/design-manager/${response.portalId}`;
         await chrome.tabs.create({ url: designManagerUrl });
+        window.close();
       } else {
         alert(
           "Could not find portal ID on this page. Please make sure you are on a HubSpot page."
