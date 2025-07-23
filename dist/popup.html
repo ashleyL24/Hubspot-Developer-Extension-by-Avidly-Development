@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>HubSpot Developer Tools</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/popup.css">
+<script defer src="js/popup.js"></script></head>
+<body>
+    <div class="container">
+        <div class="tabs">
+            <button class="tab-btn btn btn-1 active" data-tab="dev-tools">Tools</button>
+            <button class="tab-btn btn btn-1" data-tab="docs">Documentation</button>
+            <button class="tab-btn btn btn-1" data-tab="community">Community</button>
+        </div>
+
+        <div class="tab-content active" id="dev-tools">
+            <div class="button-grid section">
+                <button class="btn btn-2" id="bypassCache">Clear Cache</button>
+                <button class="btn btn-2" id="activateDev">Enable Developer Mode</button>
+                <div class="button__group">
+                    <button class="btn btn-2" id="enableDebug">Debug Mode</button>
+                    <button class="btn btn-2" id="showDebugOnly">Only Debug Info</button>
+                    <button class="btn btn-2" id="viewAmp">AMP Version</button>
+                    <button class="btn btn-2" id="designManager">Design Manager</button>
+                </div>
+                <div class="language-selector section">
+                    <select id="langSelect" disabled>
+                        <option value="">Select Language</option>
+                    </select>
+                    <button class="btn btn-2" id="switchLang" disabled>Switch Language</button>
+                    <div id="langMessage" class="message" style="display: none;"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="tab-content" id="docs">
+            <div class="section">
+                <h3>API Documentation</h3>
+                <a href="https://developers.hubspot.com/docs/api/overview" target="_blank">CRM API Reference</a>
+                <a href="https://developers.hubspot.com/docs/cms/overview" target="_blank">CMS Developer Docs</a>
+                <a href="https://developers.hubspot.com/docs/api/webhooks" target="_blank">Webhooks Guide</a>
+                <a href="https://developers.hubspot.com/docs/api/oauth-quickstart" target="_blank">OAuth Overview</a>
+            </div>
+            <div class="section">
+                <h3>Template Language</h3>
+                <a href="https://developers.hubspot.com/docs/cms/hubl" target="_blank">HubL Documentation</a>
+            </div>
+        </div>
+
+        <div class="tab-content" id="community">
+            <div class="section">
+                <h3>Community Resources</h3>
+                <a href="https://community.hubspot.com/t5/Developer-Forum/ct-p/developers" target="_blank">Developer Announcements</a>
+                <a href="https://community.hubspot.com/t5/CMS-Development/bd-p/cms-development" target="_blank">CMS Development Tips</a>
+                <a href="https://community.hubspot.com/t5/APIs-Integrations/bd-p/integration-forum" target="_blank">CRM Customization Questions</a>
+                <a href="https://community.hubspot.com/t5/Workflows/bd-p/workflows" target="_blank">Workflow Automation Examples</a>
+            </div>
+        </div>
+    </div>
+    <script src="js/popup.js"></script>
+</body>
+</html>
