@@ -1,99 +1,178 @@
-// Function to get page info from the window context
+/**
+ * Injects a function into the page context to safely access HubSpot variables
+ * This is necessary because content scripts run in an isolated context
+ */
 function injectGetPageInfo() {
+    if (typeof window.getHsInfo === 'function') {
+        return;
+    }
+    
     const script = document.createElement('script');
     script.textContent = `
         window.getHsInfo = function() {
-            return {
-                portalId: window.hsVars ? window.hsVars.portal_id : null,
-                currentLanguage: window.hsVars ? window.hsVars.language : null
-            };
+            try {
+                return {
+                    portalId: window.hsVars ? window.hsVars.portal_id : null,
+                    currentLanguage: window.hsVars ? window.hsVars.language : null
+                };
+            } catch (e) {
+                console.warn('Error accessing hsVars:', e);
+                return { portalId: null, currentLanguage: null };
+            }
         };
     `;
-    document.documentElement.appendChild(script);
-    script.remove();
+    
+    try {
+        document.documentElement.appendChild(script);
+        script.remove();
+    } catch (error) {
+        console.error('Failed to inject script:', error);
+    }
 }
 
-// Extract portal ID and languages from hsVars and page content
+/**
+ * Extracts HubSpot portal information and available languages from the current page
+ * Uses multiple fallback methods to ensure compatibility across different HubSpot pages
+ * @returns {Object} Object containing portalId, languages array, and currentLanguage
+ */
 function getPageInfo() {
-    let info = {
+    const info = {
         portalId: null,
         languages: new Set(),
         currentLanguage: null
     };
 
-    // Try direct window access
+    // Inject the helper function first
+    injectGetPageInfo();
+
+    // Try different methods to access HubSpot variables
     try {
         if (typeof window.getHsInfo === 'function') {
             const hsInfo = window.getHsInfo();
-            info.portalId = hsInfo.portalId;
-            info.currentLanguage = hsInfo.currentLanguage;
-        } else if (typeof window.hsVars !== 'undefined') {
-            info.portalId = window.hsVars.portal_id;
-            info.currentLanguage = window.hsVars.language;
+            if (hsInfo && typeof hsInfo === 'object') {
+                info.portalId = hsInfo.portalId;
+                info.currentLanguage = hsInfo.currentLanguage;
+            }
+        } else if (typeof window.hsVars !== 'undefined' && window.hsVars) {
+            info.portalId = window.hsVars.portal_id || null;
+            info.currentLanguage = window.hsVars.language || null;
         } else {
-            // Try to find hsVars in script tags (fallback, best effort only)
-            const scripts = document.querySelectorAll('script');
+            // Fallback: parse hsVars from script tags (with improved safety)
+            const scripts = document.querySelectorAll('script[type="text/javascript"], script:not([type])');
             for (const script of scripts) {
-                const content = script.textContent;
+                const content = script.textContent || script.innerText;
                 if (content && content.includes('var hsVars = {')) {
-                    // Extract object string
-                    let objText = content.split('var hsVars = ')[1];
-                    objText = objText.split('};')[0] + '}';
-                    // Sanitize for JSON parse
-                    let safeText = objText
-                        .replace(/([{,]\s*)(\w+):/g, '$1"$2":') // quote keys
-                        .replace(/'([^']*)'/g, '"$1"')         // single to double quotes
-                        .replace(/,\s*}/g, '}');               // trailing commas
                     try {
-                        const vars = JSON.parse(safeText);
-                        info.portalId = vars.portal_id;
-                        info.currentLanguage = vars.language;
-                        break;
-                    } catch (e) {
-                        console.error('Error parsing hsVars:', e, safeText);
+                        const match = content.match(/var hsVars = (\{[^}]*\});?/);
+                        if (match && match[1]) {
+                            let objText = match[1];
+                            // Safer sanitization for JSON parsing
+                            objText = objText
+                                .replace(/([{,]\s*)(\w+):/g, '$1"$2":')  // quote unquoted keys
+                                .replace(/'([^']*)'/g, '"$1"')          // single to double quotes
+                                .replace(/,\s*}/g, '}')                // remove trailing commas
+                                .replace(/undefined/g, 'null');        // handle undefined values
+                            
+                            const vars = JSON.parse(objText);
+                            if (vars && typeof vars === 'object') {
+                                info.portalId = vars.portal_id || null;
+                                info.currentLanguage = vars.language || null;
+                                break;
+                            }
+                        }
+                    } catch (parseError) {
+                        console.warn('Error parsing hsVars from script tag:', parseError);
+                        continue;
                     }
                 }
             }
         }
-    } catch (e) {
-        console.error('Error accessing hsVars:', e);
+    } catch (error) {
+        console.error('Error accessing HubSpot variables:', error);
     }
 
-    // Find languages from alternate links
-    const alternateLinks = document.querySelectorAll('link[rel="alternate"][hreflang]');
-    alternateLinks.forEach(link => {
-        const lang = link.getAttribute('hreflang');
-        if (lang) {
-            info.languages.add(lang);
-        }
-    });
+    // Extract available languages from hreflang attributes
+    try {
+        const alternateLinks = document.querySelectorAll('link[rel="alternate"][hreflang]');
+        alternateLinks.forEach(link => {
+            const lang = link.getAttribute('hreflang');
+            if (lang && lang !== 'x-default' && /^[a-z]{2}(-[A-Z]{2})?$/.test(lang)) {
+                info.languages.add(lang);
+            }
+        });
 
-    // Add current language to available languages if not already included
-    if (info.currentLanguage) {
-        info.languages.add(info.currentLanguage);
+        // Add current language if it's valid
+        if (info.currentLanguage && /^[a-z]{2}(-[A-Z]{2})?$/.test(info.currentLanguage)) {
+            info.languages.add(info.currentLanguage);
+        }
+    } catch (error) {
+        console.warn('Error extracting language information:', error);
     }
 
     return {
-        portalId: info.portalId,
-        languages: Array.from(info.languages),
+        portalId: info.portalId ? String(info.portalId) : null,
+        languages: Array.from(info.languages).sort(),
         currentLanguage: info.currentLanguage
     };
 }
 
-// Send page info to the extension
+/**
+ * Message listener for communication with the extension popup
+ * Handles requests for portal ID and language information
+ */
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-    if (request.action === 'getPortalId') {
-        const info = getPageInfo();
-        sendResponse({ portalId: info.portalId });
-        return true;
-    }
+    try {
+        if (!request || typeof request.action !== 'string') {
+            sendResponse({ error: 'Invalid request format' });
+            return false;
+        }
 
-    if (request.action === 'getLanguages') {
-        const info = getPageInfo();
-        sendResponse({
-            languages: info.languages,
-            currentLanguage: info.currentLanguage
-        });
-        return true;
+        switch (request.action) {
+            case 'getPortalId':
+                try {
+                    const info = getPageInfo();
+                    sendResponse({ 
+                        portalId: info.portalId,
+                        success: true
+                    });
+                } catch (error) {
+                    console.error('Error getting portal ID:', error);
+                    sendResponse({ 
+                        portalId: null, 
+                        error: 'Failed to retrieve portal ID',
+                        success: false
+                    });
+                }
+                break;
+
+            case 'getLanguages':
+                try {
+                    const info = getPageInfo();
+                    sendResponse({
+                        languages: info.languages,
+                        currentLanguage: info.currentLanguage,
+                        success: true
+                    });
+                } catch (error) {
+                    console.error('Error getting languages:', error);
+                    sendResponse({ 
+                        languages: [], 
+                        currentLanguage: null,
+                        error: 'Failed to retrieve language information',
+                        success: false
+                    });
+                }
+                break;
+
+            default:
+                sendResponse({ error: `Unknown action: ${request.action}` });
+                return false;
+        }
+        
+        return true; // Keep the message channel open for async response
+    } catch (error) {
+        console.error('Error in message listener:', error);
+        sendResponse({ error: 'Internal error processing request' });
+        return false;
     }
 });
